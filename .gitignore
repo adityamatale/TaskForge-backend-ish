@@ -1,3 +1,11 @@
 node_modules/
 .env
 *.txt
+
+# this '!' is to handle exceptions where i want to push example.txt
+!example.txt
+
+# to remove an already commited file | this will delete it from tracking
+# git rm --cached <filename.extention>
+# git add .
+# git commit -m ""
