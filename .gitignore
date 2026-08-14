@@ -1,5 +1,6 @@
 node_modules/
 .env
+.env.test
 *.txt
 
 # this '!' is to handle exceptions where i want to push example.txt
