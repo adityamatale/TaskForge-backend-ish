@@ -15,6 +15,7 @@ router.get('/', async (req, res, next) => {
             `
             SELECT * FROM tasks
             WHERE user_id = $1
+            ORDER BY id ASC
             `,
             [req.user.userId]
         );

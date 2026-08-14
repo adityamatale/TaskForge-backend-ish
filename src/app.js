@@ -1,6 +1,7 @@
 // Responsible for creating/configuring Express.
 
 import express from "express";
+import cors from "cors";
 
 import tasksRouter from './routes/tasks.js';
 import authRouter from "./routes/auth.js";
@@ -22,6 +23,12 @@ app.use(pinoHttp({
     logger
 }));
 
+// // for prod allow a specific url to make request to express endpoints
+// app.use(cors({
+//     origin: "https://your-frontend.com"
+// }));
+
+app.use(cors());    // allow browser to make requests to the endpoints (for dev allow all origins)
 app.use(express.json());
 
 //use router

@@ -1,0 +1,262 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: #f4f6f8;
+  color: #1f2937;
+}
+
+button {
+  border: none;
+  border-radius: 7px;
+  padding: 9px 15px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #2563eb;
+  color: white;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 11px 13px;
+  margin-bottom: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  font-size: 14px;
+  background: white;
+  color: #111827;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.dashboard {
+  max-width: 900px;
+  margin: auto;
+}
+
+.dashboard header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.dashboard header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.dashboard header button {
+  background: #374151;
+}
+
+.create-task,
+.edit-task {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.create-task h2,
+.edit-task h2 {
+  margin-top: 0;
+}
+
+.task {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid #2563eb;
+}
+
+.task.completed {
+  border-left-color: #16a34a;
+}
+
+.task-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.task-content > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.task h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.task p {
+  margin: 0 0 12px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.status {
+  height: fit-content;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status.done {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.task-actions button {
+  background: #2563eb;
+}
+
+.task-actions .delete-button {
+  background: #dc2626;
+}
+
+.edit-task button + button {
+  margin-left: 8px;
+  background: #6b7280;
+}
+
+.login-container {
+  max-width: 400px;
+  margin: 100px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.login-container h1 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.login-container h2 {
+  margin-bottom: 20px;
+}
+
+.login-container button {
+  width: 100%;
+}
+
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: #f3f4f6;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  padding: 35px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.auth-card h1 {
+  text-align: center;
+  margin: 0 0 8px;
+  color: #111827;
+}
+
+.auth-card .subtitle {
+  text-align: center;
+  color: #6b7280;
+  margin-bottom: 30px;
+}
+
+.auth-card h2 {
+  margin-bottom: 20px;
+  color: #111827;
+}
+
+.auth-card input {
+  width: 100%;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #111827;
+  background: white;
+}
+
+.auth-card input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.auth-card > button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 22px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.auth-switch button {
+  padding: 0;
+  margin-left: 4px;
+  background: none;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.logged-in-as {
+  margin: 4px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.logged-in-as strong {
+  color: #111827;
+}
