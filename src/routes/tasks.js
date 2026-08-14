@@ -1,6 +1,8 @@
 import express from "express";
 import pool from "../db.js";
 import {createTaskSchema, updateTaskSchema, taskIdSchema} from "../validation/taskSchema.js";
+import logger from "../utils/logger.js";
+
 
 const router = express.Router();
 
@@ -8,7 +10,14 @@ const router = express.Router();
 // get all tasks
 router.get('/', async (req, res, next) => {
     try{
-        const result = await pool.query("select * from tasks");
+        // const result = await pool.query("select * from tasks");
+        const result = await pool.query(
+            `
+            SELECT * FROM tasks
+            WHERE user_id = $1
+            `,
+            [req.user.userId]
+        );
 
         res.json(result.rows);
     }
@@ -25,11 +34,16 @@ router.post('/', async (req, res, next) => {
         const data = createTaskSchema.parse(req.body);
         const result = await pool.query(
             `
-            INSERT INTO tasks(title, description) 
-            VALUES ($1, $2) 
+            INSERT INTO tasks(title, description, user_id)
+            VALUES ($1, $2, $3)
             RETURNING *
             `,
-            [data.title, data.description]
+            [data.title, data.description, req.user.userId]
+        );
+
+        logger.info(
+            { taskId: result.rows[0].id },
+            "Task created"
         );
         
         res.status(201).json(result.rows[0]);
@@ -48,9 +62,9 @@ router.get('/:id', async (req, res, next) => {
         const result = await pool.query(
             `
             SELECT * FROM tasks
-            WHERE id = $1
+            WHERE id = $1 AND user_id = $2
             `,
-            [id]
+            [id, req.user.userId]
         );
 
         if(!result.rows.length) {
@@ -78,10 +92,10 @@ router.patch('/:id', async (req, res, next)=>{
             SET title = COALESCE($1, title),
                 description = COALESCE($2, description),
                 completed = COALESCE($3, completed)
-            WHERE id = $4
+            WHERE id = $4 AND user_id = $5
             RETURNING *
             `,
-            [title, description, completed, id]
+            [title, description, completed, id, req.user.userId]
         );
 
         if (result.rows.length === 0) {
@@ -104,15 +118,20 @@ router.delete('/:id', async (req, res, next) =>{
         const result = await pool.query(
             `
             DELETE FROM tasks
-            WHERE id = $1
+            WHERE id = $1 AND user_id = $2
             RETURNING *
             `,
-            [id]
+            [id, req.user.userId]
         );
 
         if (result.rows.length === 0) {
             return res.status(404).json({message: "task not found"});
         }
+
+        logger.info(
+            { taskId: id },
+            "Task deleted"
+        );
 
         res.json({message: "task deleted successfully"});
     }

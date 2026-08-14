@@ -5,6 +5,7 @@ export default defineConfig({
     test: {
         env: {
             NODE_ENV: 'test',
-        }
+        },
+        setupFiles: ['./src/tests/setup.js'],      // setup file for tests - functions that run before and after the test to keep the database clean
     }
 })

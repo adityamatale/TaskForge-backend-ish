@@ -2,6 +2,7 @@
 
 import app from './app.js';
 import { config } from './config/config.js';
+import logger from "./utils/logger.js";
 
 app.get('/', async (req, res)=>{
     // const result = await pool.query("SELECT NOW()");
@@ -13,5 +14,5 @@ app.get('/', async (req, res)=>{
     );
 });
 
-app.listen(config.port, ()=> {console.log("server live on http://localhost:3000")})
+app.listen(config.port, ()=> {logger.info(`Server running on port ${config.port} | http://localhost:3000`)})
 

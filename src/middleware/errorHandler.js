@@ -1,12 +1,32 @@
 import { ZodError } from "zod";
+import logger from "../utils/logger.js";
 
+export function errorHandler(err, req, res, next) {
 
-export function errorHandler(err, req, res, next){
-    console.log(err);
+    logger.error({
+        error: err.message,
+        stack: err.stack,
+        method: req.method,
+        path: req.originalUrl
+    }, "Request failed");
 
+    // Zod validation error
     if (err instanceof ZodError) {
-        return res.status(400).json({message: "Validation error!", errors: err.issues}); // .issues => is a property of zod error which explain the error
+        return res.status(400).json({
+            message: "Validation failed",
+            errors: err.issues
+        });
     }
 
-    res.status(500).json({message: "Internal Server Error!"});
+    // PostgreSQL unique constraint violation
+    if (err.code === "23505") {
+        return res.status(409).json({
+            message: "Email already exists"
+        });
+    }
+
+    // Unknown/unexpected error
+    res.status(500).json({
+        message: "Internal server error"
+    });
 }
