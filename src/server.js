@@ -1,18 +1,7 @@
-import 'dotenv/config';
-import express from "express";
-import tasksRouter from './routes/tasks.js';
+// Responsible for starting the server.
 
-
-//temp
-// import pool from "./db.js";
-
-// create express app for endpoints
-const app = express();
-
-app.use(express.json());
-
-//use router
-app.use("/tasks", tasksRouter);
+import app from './app.js';
+import { config } from './config/config.js';
 
 app.get('/', async (req, res)=>{
     // const result = await pool.query("SELECT NOW()");
@@ -24,5 +13,5 @@ app.get('/', async (req, res)=>{
     );
 });
 
-app.listen(process.env.PORT || 8000, ()=> {console.log("server live on http://localhost:3000")})
+app.listen(config.port, ()=> {console.log("server live on http://localhost:3000")})
 

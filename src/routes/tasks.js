@@ -1,92 +1,124 @@
 import express from "express";
 import pool from "../db.js";
+import {createTaskSchema, updateTaskSchema, taskIdSchema} from "../validation/taskSchema.js";
 
 const router = express.Router();
 
-// get all tasks
-router.get('/', async (req, res) => {
-    const result = await pool.query("select * from tasks");
 
-    res.json(result.rows);
+// get all tasks
+router.get('/', async (req, res, next) => {
+    try{
+        const result = await pool.query("select * from tasks");
+
+        res.json(result.rows);
+    }
+    catch(err){
+        next(err);
+    }
 });
 
+
 //create a task
-router.post('/', async (req, res) => {
-    const {title, description} = req.body;
-    const result = await pool.query(
-        `
-        INSERT INTO tasks(title, description) 
-        VALUES ($1, $2) 
-        RETURNING *
-        `,
-        [title, description]
-    );
-    
-    res.status(201).json(result.rows[0]);
+router.post('/', async (req, res, next) => {
+    try{
+        // const {title, description} = req.body;
+        const data = createTaskSchema.parse(req.body);
+        const result = await pool.query(
+            `
+            INSERT INTO tasks(title, description) 
+            VALUES ($1, $2) 
+            RETURNING *
+            `,
+            [data.title, data.description]
+        );
+        
+        res.status(201).json(result.rows[0]);
+    }
+    catch(err){
+        next(err);
+    }
 });
 
 
 // get a single task
-router.get('/:id', async (req, res) => {
-    const {id} = req.params; // these are parameter variables
-    const result = await pool.query(
-        `
-        SELECT * FROM tasks
-        WHERE id = $1
-        `,
-        [id]
-    );
+router.get('/:id', async (req, res, next) => {
+    try{
+        // const {id} = req.params; // these are parameter variables
+        const {id} = taskIdSchema.parse(req.params);    // the {} around id means deconstructing object - getting a attribute of that returned obj.
+        const result = await pool.query(
+            `
+            SELECT * FROM tasks
+            WHERE id = $1
+            `,
+            [id]
+        );
 
-    if(!result.rows.length) {
-        return res.status(404).json({message: "task not found"});
+        if(!result.rows.length) {
+            return res.status(404).json({message: "task not found"});
+        }
+
+        res.json(result.rows[0]);
     }
-
-    res.json(result.rows[0]);
+    catch(err){
+        next(err);
+    }
 });
 
+
 //patch a single task
-router.patch('/:id', async (req, res)=>{
-    const {id} = req.params;
-    const {title, description, completed} = req.body;
-    const result = await pool.query(
-        `
-        UPDATE tasks
-        SET title = COALESCE($1, title),
-            description = COALESCE($2, description),
-            completed = COALESCE($3, completed)
-        WHERE id = $4
-        RETURNING *
-        `,
-        [title, description, completed, id]
-    );
+router.patch('/:id', async (req, res, next)=>{
+    try{
+        // const {id} = req.params;
+        const {id} = taskIdSchema.parse(req.params);
+        // const {title, description, completed} = req.body;
+        const {title, description, completed} = updateTaskSchema.parse(req.body);
+        const result = await pool.query(
+            `
+            UPDATE tasks
+            SET title = COALESCE($1, title),
+                description = COALESCE($2, description),
+                completed = COALESCE($3, completed)
+            WHERE id = $4
+            RETURNING *
+            `,
+            [title, description, completed, id]
+        );
 
-    if (result.rows.length === 0) {
-        return res.status(404).json({message: "task not found"});
-    };
+        if (result.rows.length === 0) {
+            return res.status(404).json({message: "task not found"});
+        }
 
-    res.json(result.rows[0]);
-
+        res.json(result.rows[0]);
+    }
+    catch(err){
+        next(err);
+    }
 });
 
 
 // delete task
-router.delete('/:id', async (req, res) =>{
-    const {id} = req.params;
-    const result = await pool.query(
-        `
-        DELETE FROM tasks
-        WHERE id = $1
-        RETURNING *
-        `,
-        [id]
-    );
+router.delete('/:id', async (req, res, next) =>{
+    try{
+        // const {id} = req.params;
+        const {id} = taskIdSchema.parse(req.params);
+        const result = await pool.query(
+            `
+            DELETE FROM tasks
+            WHERE id = $1
+            RETURNING *
+            `,
+            [id]
+        );
 
-    if (result.rows.length === 0) {
-        return res.status(404).json({message: "task not found"});
-    };
+        if (result.rows.length === 0) {
+            return res.status(404).json({message: "task not found"});
+        }
 
-    res.json({message: "task deleted successfully"});
-
+        res.json({message: "task deleted successfully"});
+    }
+    catch(err){
+        next(err);
+    }
 });
 
 
