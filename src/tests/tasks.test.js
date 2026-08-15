@@ -1,15 +1,38 @@
-import { describe, it, expect } from "vitest";  // to check the frame work
+import { describe, it, expect, beforeAll } from "vitest";  // to check the frame work
 import request from "supertest";    //for fake api reqests
 import app from "../app.js";
 
 
 // test cases
 describe("Tasks API", () => {
+    
+    let token;
+
+    // make a test user (register n login) to get the JWT token for authentication on every request
+    beforeAll(async () => {
+        await request(app)
+            .post("/auth/register")
+            .send({
+                name: "Test User",
+                email: "tasks-test@example.com",
+                password: "password123"
+            });
+    
+        const response = await request(app)
+            .post("/auth/login")
+            .send({
+                email: "tasks-test@example.com",
+                password: "password123"
+            });
+    
+        token = response.body.token;
+    });
 
     // GET /tasks
     it("should return all tasks", async () => {
         const response = await request(app)
-            .get("/tasks");
+            .get("/tasks")
+            .set("Authorization", `Bearer ${token}`);
 
         expect(response.status).toBe(200);
         expect(response.body).toBeInstanceOf(Array);
@@ -20,6 +43,7 @@ describe("Tasks API", () => {
     it("should create a new task", async () => {
         const response = await request(app)
             .post("/tasks")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 title: "Test task",
                 description: "Created during testing"
@@ -36,6 +60,7 @@ describe("Tasks API", () => {
     it("should reject an invalid task", async () => {
         const response = await request(app)
             .post("/tasks")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 title: ""
             });
@@ -52,6 +77,7 @@ describe("Tasks API", () => {
         // Create one first
         const created = await request(app)
             .post("/tasks")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 title: "Task for GET test"
             });
@@ -59,7 +85,8 @@ describe("Tasks API", () => {
         const id = created.body.id;
 
         const response = await request(app)
-            .get(`/tasks/${id}`);
+            .get(`/tasks/${id}`)
+            .set("Authorization", `Bearer ${token}`);
 
         expect(response.status).toBe(200);
         expect(response.body.id).toBe(id);
@@ -69,7 +96,8 @@ describe("Tasks API", () => {
     // GET /tasks/:id - not found
     it("should return 404 when task does not exist", async () => {
         const response = await request(app)
-            .get("/tasks/999999");
+            .get("/tasks/999999")
+            .set("Authorization", `Bearer ${token}`);
 
         expect(response.status).toBe(404);
         expect(response.body.message).toBe("task not found");
@@ -81,6 +109,7 @@ describe("Tasks API", () => {
 
         const created = await request(app)
             .post("/tasks")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 title: "Original task"
             });
@@ -89,6 +118,7 @@ describe("Tasks API", () => {
 
         const response = await request(app)
             .patch(`/tasks/${id}`)
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 title: "Updated task",
                 completed: true
@@ -105,6 +135,7 @@ describe("Tasks API", () => {
 
         const created = await request(app)
             .post("/tasks")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 title: "Task"
             });
@@ -113,6 +144,7 @@ describe("Tasks API", () => {
 
         const response = await request(app)
             .patch(`/tasks/${id}`)
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 completed: "yes"
             });
@@ -127,6 +159,7 @@ describe("Tasks API", () => {
 
         const created = await request(app)
             .post("/tasks")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 title: "Task to delete"
             });
@@ -134,11 +167,11 @@ describe("Tasks API", () => {
         const id = created.body.id;
 
         const response = await request(app)
-            .delete(`/tasks/${id}`);
+            .delete(`/tasks/${id}`)
+            .set("Authorization", `Bearer ${token}`);
 
         expect(response.status).toBe(200);
-        expect(response.body.message)
-            .toBe("task deleted successfully");
+        expect(response.body.message).toBe("task deleted successfully");
     });
 
 
@@ -146,7 +179,8 @@ describe("Tasks API", () => {
     it("should return 404 when deleting a non-existent task", async () => {
 
         const response = await request(app)
-            .delete("/tasks/999999");
+            .delete("/tasks/999999")
+            .set("Authorization", `Bearer ${token}`);
 
         expect(response.status).toBe(404);
         expect(response.body.message).toBe("task not found");
