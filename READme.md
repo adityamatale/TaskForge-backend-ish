@@ -1,30 +1,32 @@
-# 🗂️ Task Manager API — Project Summary
+# 🗂️ TaskForge — Project Summary
 
-> **Goal:** Build a real-world Node.js backend while learning JavaScript/Node/Express/PostgreSQL concepts **side by side**.
-> We are intentionally building it step-by-step instead of jumping straight into advanced architecture.
+> **Goal:** Build a real-world full-stack application while learning JavaScript, Node.js, Express, PostgreSQL, testing, CI/CD, and cloud deployment **side by side**.
+>
+> The project is intentionally built step-by-step instead of starting with an advanced architecture.
 
 ---
 
 ## 🛠️ Stack
 
 ```text
-Node.js
+Frontend
    ↓
-Express
+Backend — Node.js + Express
    ↓
-pg (node-postgres)
-   ↓
-PostgreSQL 14
+PostgreSQL
 ```
 
 Additional tools:
 
 * **Zod** → request validation
+* **JWT** → authentication
 * **dotenv** → environment variables
-* **Nodemon** → development auto-restart
-* **Vitest** → testing framework
-* **Supertest** → HTTP/API testing
+* **Vitest** → testing
+* **Supertest** → API testing
+* **Pino** → structured logging
 * **Git/GitHub** → version control
+* **GitHub Actions** → CI/CD
+* **Google Cloud Platform** → deployment
 
 Using **ESM**:
 
@@ -42,10 +44,10 @@ module.exports
 
 ---
 
-# 📁 Current Structure
+# 📁 Project Structure
 
 ```text
-task_manager/
+TaskForge/
 │
 ├── src/
 │   ├── app.js
@@ -53,22 +55,14 @@ task_manager/
 │   ├── db.js
 │   │
 │   ├── config/
-│   │   └── config.js
-│   │
 │   ├── middleware/
-│   │   └── errorHandler.js
-│   │
 │   ├── routes/
-│   │   └── tasks.js
-│   │
 │   ├── validation/
-│   │   └── taskSchema.js
-│   │
 │   ├── migrations/
-│   │   └── 001_create_tasks.js
-│   │
 │   └── tests/
-│       └── tasks.test.js
+│
+├── .github/
+│   └── workflows/
 │
 ├── .env
 ├── .env.test
@@ -78,29 +72,31 @@ task_manager/
 └── vitest.config.js
 ```
 
+Frontend and backend are maintained in the **same repository** and will be deployed separately.
+
 ---
 
 # ⚙️ Application Setup
 
 ### `app.js`
 
-Responsible for creating/configuring Express:
+Responsible for configuring Express:
 
 ```text
 Express
  ↓
-JSON middleware
+Middleware
  ↓
 Routes
  ↓
 Error handler
 ```
 
-It **does not** call `app.listen()`.
+It does **not** call `app.listen()`.
 
 ### `server.js`
 
-Responsible only for starting the server:
+Responsible for starting the HTTP server:
 
 ```text
 server.js
@@ -110,34 +106,29 @@ app.listen()
 HTTP server
 ```
 
-This separation allows tests to import `app.js` without starting a real server.
+This allows tests to import `app.js` without starting a real server.
 
 ---
 
 # 🗄️ Database
 
-Local PostgreSQL 14.
+PostgreSQL is used as the application's relational database.
 
-### Development DB
+### Development
 
 ```text
-Database: task_manager
-User:     matty
-Host:     localhost
-Port:     5432
+task_manager
 ```
 
-### Test DB
+### Testing
 
 ```text
 task_manager_test
 ```
 
-Tests use the test database so they don't pollute development data.
+Tests use a separate database so test data does not affect development data.
 
-### `db.js`
-
-Creates a PostgreSQL connection pool using the configured `DATABASE_URL`.
+### Database layer
 
 ```text
 Application
@@ -149,143 +140,136 @@ PostgreSQL
 
 ---
 
-# 📋 Tasks Table
+# 🔐 Authentication
+
+Authentication is implemented using **JWT**.
 
 ```text
-tasks
-├── id
-├── title
-├── description
-├── completed
-└── created_at
+Register
+   ↓
+User stored in PostgreSQL
+   ↓
+Login
+   ↓
+JWT issued
+   ↓
+Protected request
+   ↓
+JWT verification
+   ↓
+User-specific resource
 ```
+
+Tasks belong to authenticated users, so task operations are restricted to the requesting user's data.
 
 ---
 
-# 🌐 API Endpoints
+# 🌐 API
 
-| Method | Endpoint     | Purpose       |
-| ------ | ------------ | ------------- |
-| GET    | `/tasks`     | Get all tasks |
-| POST   | `/tasks`     | Create a task |
-| GET    | `/tasks/:id` | Get one task  |
-| PATCH  | `/tasks/:id` | Update a task |
-| DELETE | `/tasks/:id` | Delete a task |
+### Authentication
+
+| Method | Endpoint         | Purpose               |
+| ------ | ---------------- | --------------------- |
+| POST   | `/auth/register` | Register user         |
+| POST   | `/auth/login`    | Login and receive JWT |
+
+### Tasks
+
+| Method | Endpoint     | Purpose          |
+| ------ | ------------ | ---------------- |
+| GET    | `/tasks`     | Get user's tasks |
+| POST   | `/tasks`     | Create task      |
+| GET    | `/tasks/:id` | Get one task     |
+| PATCH  | `/tasks/:id` | Update task      |
+| DELETE | `/tasks/:id` | Delete task      |
+
+Protected task endpoints require:
+
+```text
+Authorization: Bearer <JWT>
+```
 
 ---
 
 # 🔄 Request Flow
 
-For a normal request:
+Normal request:
 
 ```text
 Client
   ↓
 Express
   ↓
-Route
+Authentication
   ↓
-Zod validation
+Validation
+  ↓
+Route
   ↓
 PostgreSQL
   ↓
 JSON response
 ```
 
-If something goes wrong:
+Errors:
 
 ```text
 Route
   ↓
-catch(error)
-  ↓
 next(error)
   ↓
 Central errorHandler
+  ↓
+HTTP error response
 ```
 
-### Errors
+### Validation
+
+Zod validates:
 
 ```text
-ZodError
-   ↓
+Request body
+Request parameters
+```
+
+Invalid requests return:
+
+```text
 400 Bad Request
-
-Other / unexpected error
-   ↓
-500 Internal Server Error
 ```
-
-> `async/await` handles asynchronous operations.
-> `next(error)` passes an error to Express's centralized error middleware.
-
----
-
-# ✅ Validation
-
-Using Zod:
-
-```text
-createTaskSchema
-updateTaskSchema
-taskIdSchema
-```
-
-Applied to:
-
-```text
-POST   /tasks       → body
-PATCH  /tasks/:id   → body
-GET    /tasks/:id   → params
-DELETE /tasks/:id   → params
-```
-
-For IDs we use:
-
-```js
-z.coerce.number().int().positive()
-```
-
-because URL parameters arrive as strings.
 
 ---
 
 # 🗃️ Database Migrations
 
-Instead of manually creating tables through `psql`, the project can create them through code.
+Database changes are handled through migration scripts instead of manually creating tables.
 
 ```text
 npm run migrate
        ↓
-001_create_tasks.js
+Migration scripts
        ↓
 PostgreSQL
-       ↓
-tasks table
 ```
 
-We also started a migration tracking system:
+Test migrations can be run separately:
 
 ```text
-001_create_tasks  ✅
-002_add_priority  ❌
-003_add_due_date  ❌
+npm run migrate:test
 ```
 
-so migrations can eventually be executed only once/in order.
-
-> Migrations don't use the Express error handler because they run directly through Node, not through an HTTP request.
+This keeps development and test database schemas consistent.
 
 ---
 
-# 🔐 Environment / Config
+# 🌍 Environment Configuration
 
 Development:
 
 ```text
 .env
  ↓
-Development DB
+Development database
 ```
 
 Testing:
@@ -293,28 +277,18 @@ Testing:
 ```text
 .env.test
  ↓
-Test DB
+Test database
 ```
 
-`config.js` decides which environment file to load based on:
+Sensitive environment files are excluded from Git.
 
-```js
-process.env.NODE_ENV
-```
-
-`vitest.config.js` sets:
-
-```text
-NODE_ENV = test
-```
-
-when Vitest runs.
+Production environment variables will be configured through the deployment platform rather than committed to the repository.
 
 ---
 
 # 🧪 Testing
 
-### Testing stack
+Testing stack:
 
 ```text
 Vitest
@@ -326,71 +300,110 @@ Express app
 Test PostgreSQL DB
 ```
 
-### Vitest
-
-Provides:
-
-```js
-describe()
-it()
-expect()
-```
-
-* `describe()` → groups tests
-* `it()` → defines one test
-* `expect()` → checks the result
-
-### Supertest
-
-Simulates API requests:
-
-```js
-request(app).get("/tasks")
-```
-
-without manually running Postman/curl.
-
-### Current tests
+Tests cover:
 
 ```text
-GET     /tasks              ✅
-POST    /tasks              ✅
-POST    /tasks              invalid input
-GET     /tasks/:id          ✅
-GET     /tasks/:id          not found
-PATCH   /tasks/:id          ✅
-PATCH   /tasks/:id          invalid input
-DELETE  /tasks/:id          ✅
-DELETE  /tasks/:id          not found
+Authentication
+   ↓
+Registration
+Login
+Validation
+
+Tasks
+   ↓
+GET
+POST
+GET /:id
+PATCH
+DELETE
+404 cases
+Validation cases
 ```
 
-### Scripts
-
-```json
-{
-  "dev": "nodemon src/server.js",
-  "start": "node src/server.js",
-  "migrate": "node src/migrations/001_create_tasks.js",
-  "test": "vitest --run"
-}
-```
-
-`--run` means:
-
-```text
-Run tests → show results → exit
-```
-
-instead of staying in watch mode.
+The test database is cleaned before the test suite runs.
 
 ---
 
-# 🔨 How We Built It — Step by Step
+# 📊 Logging
 
-The project has been built in this order:
+The backend uses structured logging with **Pino**.
+
+Logs include useful application information such as:
 
 ```text
-1. Node.js + ESM setup
+Request information
+Task creation
+Task deletion
+Errors
+Response information
+```
+
+This provides more useful production logs than relying on `console.log()`.
+
+---
+
+# 🔄 CI — GitHub Actions
+
+GitHub Actions automatically runs the backend test workflow on:
+
+```text
+Push
+   ↓
+Pull Request
+```
+
+Current CI flow:
+
+```text
+GitHub
+   ↓
+GitHub Actions
+   ↓
+Install dependencies
+   ↓
+Start PostgreSQL
+   ↓
+Run test migrations
+   ↓
+Run tests
+   ↓
+GCP authentication
+```
+
+The workflow uses a separate PostgreSQL test database.
+
+---
+
+# ☁️ GCP Deployment
+
+Google Cloud Platform is being used for backend deployment.
+
+Current setup:
+
+```text
+GitHub Actions
+       ↓
+Workload Identity Federation
+       ↓
+GCP Service Account
+       ↓
+Artifact Registry
+       ↓
+Cloud Run
+```
+
+GitHub Actions authenticates with GCP using **OIDC + Workload Identity Federation**, so no long-lived GCP service-account key is stored in GitHub.
+
+The backend will be deployed to **Cloud Run**.
+
+---
+
+# 🔨 How We Built It
+
+The project has evolved incrementally:
+
+```text
+1. Node.js + ESM
         ↓
 2. Express server
         ↓
@@ -398,9 +411,9 @@ The project has been built in this order:
         ↓
 4. Tasks CRUD API
         ↓
-5. Centralized error handling
+5. Error handling
         ↓
-6. Zod request validation
+6. Zod validation
         ↓
 7. Database migrations
         ↓
@@ -412,106 +425,54 @@ The project has been built in this order:
         ↓
 11. Separate test database
         ↓
-12. Test database migrations
+12. Authentication
         ↓
-13. Test cleanup/isolation
+13. User-specific tasks
         ↓
-14. Logging
+14. Structured logging
         ↓
-15. Authentication
+15. GitHub Actions CI
         ↓
-16. Better API/project architecture
+16. GCP authentication
+        ↓
+17. Cloud deployment setup
 ```
 
-The important part is that **we're learning each concept while actually implementing it in the project**, rather than just copying a production template.
+The important part is that **each technology is being learned while implementing it**, rather than copying a pre-built production template.
 
 ---
 
 # 🌿 Git Workflow
 
-Current development happens on feature branches:
+Development happens on feature branches:
 
 ```text
 main
   ↑
-feat/task-api
+feature branch
 ```
 
-Changes are committed to the feature branch and then merged into `main`.
+Changes are developed and tested on the feature branch before being merged into `main`.
 
-Environment files such as:
-
-```text
-.env
-.env.test
-```
-
-are **not committed**.
+Environment files containing secrets are never committed.
 
 ---
 
-# 🎯 Immediate Next Steps
-
-According to our current plan:
-
-### 1. Finish test database setup
-
-Make sure:
+# 🚀 Current Status
 
 ```text
-npm test
-   ↓
-.env.test
-   ↓
-task_manager_test
-   ↓
-migrations automatically applied
-   ↓
-tests run
+Backend API              ✅
+PostgreSQL               ✅
+Migrations               ✅
+Validation               ✅
+Authentication           ✅
+Error handling           ✅
+Structured logging       ✅
+Automated tests          ✅
+GitHub Actions CI        ✅
+GCP authentication       ✅
+Cloud Run deployment     🔄
+Frontend deployment      🔜
 ```
 
-### 2. Test cleanup / isolation
-
-Make sure tests don't leave unwanted data behind.
-
-```text
-Before test
-    ↓
-clean test DB/state
-    ↓
-run tests
-    ↓
-cleanup
-```
-
-### 3. Logging
-
-Introduce proper application logging instead of relying only on:
-
-```js
-console.log()
-console.error()
-```
-
-We'll decide **what should be logged, where, and at what level**.
-
-### 4. Authentication
-
-After the core API/testing foundation is solid, add authentication and protected routes.
-
-### 5. Production-style API architecture
-
-Then improve things like:
-
-```text
-Controllers
-Services
-Routes
-Validation
-Error handling
-Database layer
-Logging
-Authentication
-```
-
-without over-engineering the project too early.
+The next step is completing the **GCP backend deployment**, followed by the separate **frontend deployment**.

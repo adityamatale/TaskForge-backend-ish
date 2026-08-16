@@ -1,59 +1,54 @@
-# Task Manager API
+# TaskForge — Local Setup
 
-A RESTful Task Manager API built with **Node.js, Express, PostgreSQL, JWT authentication, Zod, Vitest, and Supertest**.
+## Requirements
 
-## Tech Stack
-
-* Node.js + Express
+* Node.js
 * PostgreSQL
-* JWT authentication
-* Zod validation
-* Vitest + Supertest
-* Pino logging
+* Git
 
-## Features
+## Install
 
-* User registration and login
-* JWT-based authentication
-* Create, read, update, and delete tasks
-* User-specific tasks
-* Request validation with Zod
-* Centralized error handling
-* Automated API tests
-* Separate test database configuration
-
-## Getting Started
-
-### 1. Install dependencies
+Clone the repository and install dependencies:
 
 ```bash
-npm install
+git clone https://github.com/adityamatale/TaskForge-backend-ish.git
+cd TaskForge-backend-ish
+npm ci
 ```
 
-### 2. Configure environment
+## Environment
 
-Create a `.env` file:
+Create `.env` for development:
 
 ```env
-PORT=3000
-DATABASE_URL=postgresql://username:password@localhost:5432/task_manager
-JWT_SECRET=your_secret_key
+DATABASE_URL=postgresql://<user>:<password>@localhost:5432/task_manager
+JWT_SECRET=<your-development-secret>
 ```
 
-For testing, create `.env.test`:
+Create `.env.test` for testing:
 
 ```env
-DATABASE_URL=postgresql://username:password@localhost:5432/task_manager_test
-JWT_SECRET=test_secret
+DATABASE_URL=postgresql://<user>:<password>@localhost:5432/task_manager_test
+JWT_SECRET=test-secret
 ```
 
-> Keep `.env` and `.env.test` out of Git.
+Do not commit either file.
 
-### 3. Set up PostgreSQL
+## Database
 
-Create the database and required tables according to the project's database schema.
+Create the development database, then run:
 
-### 4. Run the application
+```bash
+npm run migrate
+```
+
+For the test database:
+
+```bash
+npm run migrate:test
+```
+
+## Run
 
 Development:
 
@@ -61,78 +56,52 @@ Development:
 npm run dev
 ```
 
-The API will be available at:
+Production-style local run:
 
-```text
-http://localhost:3000
+```bash
+npm start
 ```
 
-## Testing
+## Tests
 
-Run the complete test suite:
+Run tests once:
+
+```bash
+npm run test:run
+```
+
+Run Vitest interactively:
 
 ```bash
 npm test
 ```
 
-Tests use a separate test database and automatically clean the database before the test run.
+Tests use the separate test database and clean it before the test suite.
 
-Current coverage includes:
+## Available Scripts
 
-* User registration
-* User login
-* Authentication failures
-* Input validation
-* Task creation
-* Task retrieval
-* Task updates
-* Task deletion
-* Not-found cases
+| Command                | Purpose                    |
+| ---------------------- | -------------------------- |
+| `npm run dev`          | Development server         |
+| `npm start`            | Start server               |
+| `npm run migrate`      | Run development migrations |
+| `npm run migrate:test` | Run test migrations        |
+| `npm test`             | Vitest                     |
+| `npm run test:run`     | Run tests once             |
 
-## API Endpoints
+## API
 
-### Authentication
-
-| Method | Endpoint         | Auth |
-| ------ | ---------------- | ---- |
-| POST   | `/auth/register` | No   |
-| POST   | `/auth/login`    | No   |
-
-### Tasks
-
-| Method | Endpoint     | Auth |
-| ------ | ------------ | ---- |
-| GET    | `/tasks`     | JWT  |
-| POST   | `/tasks`     | JWT  |
-| GET    | `/tasks/:id` | JWT  |
-| PATCH  | `/tasks/:id` | JWT  |
-| DELETE | `/tasks/:id` | JWT  |
-
-For protected routes, send:
-
-```http
-Authorization: Bearer <JWT_TOKEN>
-```
-
-## Project Structure
+Main endpoints:
 
 ```text
-src/
-├── routes/
-├── validation/
-├── middleware/
-├── utils/
-├── tests/
-├── app.js
-├── db.js
-└── server.js
+POST   /auth/register
+POST   /auth/login
 
-.env
-.env.test
-vitest.config.js
-package.json
+GET    /tasks
+POST   /tasks
+GET    /tasks/:id
+PATCH  /tasks/:id
+DELETE  /tasks/:id
 ```
 
-## License
-
-This project is for educational and development purposes.
+Task endpoints require JWT authentication.
